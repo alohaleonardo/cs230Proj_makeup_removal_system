@@ -56,8 +56,8 @@ import tensorflow.contrib.slim.nets
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--train_dir', default='data/makeup_with_labels/train')
-parser.add_argument('--val_dir', default='data/makeup_with_labels/val')
+parser.add_argument('--train_dir', default='makeup_with_labels/train')
+parser.add_argument('--val_dir', default='makeup_with_labels/val')
 parser.add_argument('--model_path', default='vgg_16.ckpt', type=str)
 parser.add_argument('--batch_size', default=32, type=int)
 parser.add_argument('--num_workers', default=4, type=int)
@@ -119,11 +119,11 @@ def check_accuracy(sess, correct_prediction, is_training, dataset_init_op):
     # Return the fraction of datapoints that were correctly classified
     acc = float(num_correct) / num_samples
     return acc
-
-
-def main(args):
+  
+  def main(args):
     # Get the list of filenames and corresponding list of labels for training et validation
     args = args[0]
+    # args = [args, [... .json]] --> need args[0]
     train_filenames, train_labels = list_images(args.train_dir)
     val_filenames, val_labels = list_images(args.val_dir)
     assert set(train_labels) == set(val_labels),\
@@ -271,11 +271,16 @@ def main(args):
             # `get_variables` will only return the variables whose name starts with the given pattern
             fc8_variables = tf.contrib.framework.get_variables('vgg_16/fc8')
             fc8_init = tf.variables_initializer(fc8_variables)
+            print 'fc8_variables', fc8_variables
+            print 'fc8_init', fc8_init
 
             # ---------------------------------------------------------------------
             # Using tf.losses, any loss is added to the tf.GraphKeys.LOSSES collection
             # We can then call the total loss easily
             tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=logits)
+            #tf.losses.sigmoid_cross_entropy(labels, logits=logits)
+            #print labels.shape, logits.shape
+            #tf.nn.sigmoid_cross_entropy_with_logits(labels=labels, logits=logits)
             loss = tf.losses.get_total_loss()
 
             # First we want to train only the reinitialized last layer fc8 for a few epochs.
