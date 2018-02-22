@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[29]:
+# In[47]:
 
 
 import tensorflow as tf
@@ -17,74 +17,69 @@ from tensorflow.python.framework import ops
 np.random.seed(1)
 
 
-# In[30]:
+# In[48]:
 
 
-train_no_dir = 'makeup_with_labels/train/no_makeup/'
-train_yes_dir = 'makeup_with_labels/train/yes_makeup/'
-val_no_dir = 'makeup_with_labels/val/no_makeup/'
-val_yes_dir = 'makeup_with_labels/val/yes_makeup/'
+no_dir = 'makeup_with_labels/no_makeup/'
+yes_dir = 'makeup_with_labels/yes_makeup/'
 
 
-# In[31]:
+# In[49]:
 
 
-def openFiles(train_no_dir, train_yes_dir, val_no_dir, val_yes_dir):
-    train_X, train_Y = create_datasets(train_no_dir, train_yes_dir, True)
-    val_X, val_Y = create_datasets(val_no_dir, val_yes_dir)
-    return train_X, train_Y, val_X, val_Y
+def create_datasets(no_dir, yes_dir):
+	no_files = glob.glob(no_dir + '*.jpg')
+	no_filelist = []
+	X = []
+	Y = []
+	X_to_no_file = {}
+	X_to_yes_file = {}
+	for file in no_files:
+		img = Image.open(file)
+		arr = np.array(img)
+		no_filelist.append(arr)
+		img_flip = np.fliplr(img)
+		arr_flip = np.array(img_flip)
+		no_filelist.append(arr_flip)
+	count_no = 0
+	for i in range(len(no_filelist)):
+		img = no_filelist[i]
+		if len(img.shape) == 3 and img.shape[0] == 128 and img.shape[1] == 128 and img.shape[2] == 3:
+			X.append(np.array(img))
+			Y.append(np.array([0, 1]))
+			X_to_no_file[count_no] = i
+			count_no += 1
+	yes_files = glob.glob(yes_dir + '*.jpg')
+	yes_filelist = []
+	for file in yes_files:
+		img = Image.open(file)
+		arr = np.array(img)
+		yes_filelist.append(arr)
+		img_flip = np.fliplr(img)
+		arr_flip = np.array(img_flip)
+		yes_filelist.append(arr_flip)
+	count_yes = 0
+	for i in range(len(yes_filelist)):
+		img = yes_filelist[i]
+		if len(img.shape) == 3 and img.shape[0] == 128 and img.shape[1] == 128 and img.shape[2] == 3:
+			X.append(np.array(img))
+			Y.append(np.array([1, 0]))
+			X_to_yes_file[count_yes] = i
+			count_yes += 1
+	X = np.array(X)
+	Y = np.array(Y)
+	s = np.arange(X.shape[0])
+	shuffled_X = np.copy(X)[s]
+	shuffled_Y = np.copy(Y)[s]
+	num_data = shuffled_Y.shape[0]
+	train_X = np.copy(shuffled_X[:int(num_data*0.8)])
+	val_X = np.copy(shuffled_X[int(num_data*0.8):])
+	train_Y = np.copy(shuffled_Y[:int(num_data*0.8)])
+	val_Y = np.copy(shuffled_Y[int(num_data*0.8):])
+	return train_X, train_Y, val_X, val_Y
 
 
-# In[32]:
-
-
-def create_datasets(no_dir, yes_dir, train = False):
-    no_files = glob.glob(no_dir + '*.jpg')
-    no_filelist = []
-    X = []
-    Y = []
-    X_to_no_file = {}
-    X_to_yes_file = {}
-    for file in no_files:
-        img = Image.open(file)
-        arr = np.array(img)
-        no_filelist.append(arr)
-        if train == True:
-            img_flip = np.fliplr(img)
-            arr_flip = np.array(img_flip)
-            no_filelist.append(arr_flip)
-    count_no = 0
-    for i in range(len(no_filelist)):
-        img = no_filelist[i]
-        if len(img.shape) == 3 and img.shape[0] == 128 and img.shape[1] == 128 and img.shape[2] == 3:
-            X.append(np.array(img))
-            Y.append(np.array([0, 1]))
-            X_to_no_file[count_no] = i
-            count_no += 1
-    yes_files = glob.glob(yes_dir + '*.jpg')
-    yes_filelist = []
-    for file in yes_files:
-        img = Image.open(file)
-        arr = np.array(img)
-        yes_filelist.append(arr)
-        if train == True:
-            img_flip = np.fliplr(img)
-            arr_flip = np.array(img_flip)
-            yes_filelist.append(arr_flip)
-    count_yes = 0
-    for i in range(len(yes_filelist)):
-        img = yes_filelist[i]
-        if len(img.shape) == 3 and img.shape[0] == 128 and img.shape[1] == 128 and img.shape[2] == 3:
-            X.append(np.array(img))
-            Y.append(np.array([1, 0]))
-            X_to_yes_file[count_yes] = i
-            count_yes += 1
-    X = np.array(X)
-    Y = np.array(Y)
-    return X, Y
-
-
-# In[33]:
+# In[50]:
 
 
 def create_placeholders(n_H0, n_W0, n_C0, n_y):
@@ -93,7 +88,7 @@ def create_placeholders(n_H0, n_W0, n_C0, n_y):
 	return X, Y
 
 
-# In[35]:
+# In[51]:
 
 
 def initialize_parameters():
@@ -108,7 +103,7 @@ def initialize_parameters():
     return parameters
 
 
-# In[36]:
+# In[52]:
 
 
 def forward_propagation(X, parameters):
@@ -144,7 +139,7 @@ def forward_propagation(X, parameters):
     return Z5
 
 
-# In[37]:
+# In[53]:
 
 
 def compute_cost(Z, Y, parameters, lambd, regu = False):
@@ -161,7 +156,7 @@ def compute_cost(Z, Y, parameters, lambd, regu = False):
         return cost
 
 
-# In[38]:
+# In[54]:
 
 
 def model(train_X, train_Y, val_X, val_Y, learning_rate, num_epochs, lambd, regu, print_cost = True):
@@ -227,11 +222,11 @@ def model(train_X, train_Y, val_X, val_Y, learning_rate, num_epochs, lambd, regu
         return train_accuracy, test_accuracy, parameters
 
 
-# In[45]:
+# In[55]:
 
 
 def main():
-    train_X, train_Y, val_X, val_Y = openFiles(train_no_dir, train_yes_dir, val_no_dir, val_yes_dir)
+    train_X, train_Y, val_X, val_Y = create_datasets(no_dir, yes_dir)
     print train_X.shape # (1670, 128, 128, 3)
     print train_Y.shape # (1670, 2)
     print val_X.shape   # (200, 128, 128, 3)
@@ -240,14 +235,14 @@ def main():
     lambd_list = [1e5, 1e4, 1e3, 1e2, 1e1, 1]
     regu = True
     learning_rate_dict = {}
-    for i in range(10):
+    for i in range(1):
         r = np.random.rand()
         r = - r - 2
         learning_rate = 10 ** r
         learning_rate = 0.003
         #print "learning_rate", learning_rate
         for lambd in lambd_list:
-            train_accuracy, test_accuracy, parameters = model(train_X, train_Y, val_X, val_Y, learning_rate, n_epoch, lambd, regu)
+            train_accuracy, test_accuracy, parameters = model(train_X, train_Y, val_X, val_Y, learning_rate, n_epoch, 1, regu)
             learning_rate_dict[learning_rate] = (train_accuracy, test_accuracy, parameters)
     for lr in learning_rate_dict:
         print lr, learning_rate_dict[lr][0], learning_rate_dict[lr][1]
