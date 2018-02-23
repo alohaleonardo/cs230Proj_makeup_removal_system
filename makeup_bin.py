@@ -1,7 +1,6 @@
+'''
 
-# coding: utf-8
-
-# In[29]:
+'''
 
 
 import tensorflow as tf
@@ -17,25 +16,17 @@ from tensorflow.python.framework import ops
 np.random.seed(1)
 
 
-# In[30]:
-
-
+# file path
 train_no_dir = 'makeup_with_labels/train/no_makeup/'
 train_yes_dir = 'makeup_with_labels/train/yes_makeup/'
 val_no_dir = 'makeup_with_labels/val/no_makeup/'
 val_yes_dir = 'makeup_with_labels/val/yes_makeup/'
 
-
-# In[31]:
-
-
+# open file
 def openFiles(train_no_dir, train_yes_dir, val_no_dir, val_yes_dir):
     train_X, train_Y = create_datasets(train_no_dir, train_yes_dir, True)
     val_X, val_Y = create_datasets(val_no_dir, val_yes_dir)
     return train_X, train_Y, val_X, val_Y
-
-
-# In[32]:
 
 
 def create_datasets(no_dir, yes_dir, train = False):
